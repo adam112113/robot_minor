@@ -24,7 +24,7 @@ class MecanumSerialDriver(Node):
         super().__init__('mecanum_serial_driver')
 
         # parameters (can be set from launch)
-        self.declare_parameter('port', '/dev/ttyUSB0')
+        self.declare_parameter('port', '/dev/ttyACM0')
         self.declare_parameter('baudrate', 115200)
         self.declare_parameter('wheel_radius', 0.033)  # meters
         self.declare_parameter('wheel_separation_x', 0.375)  # front-back distance (m)
