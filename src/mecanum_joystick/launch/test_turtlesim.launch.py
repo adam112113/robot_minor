@@ -6,7 +6,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('ros2_joy_twist')
+    pkg_share = get_package_share_directory('mecanum_joystick')
     mappings = os.path.join(pkg_share, 'mappings.yaml')
 
     joy = Node(
@@ -18,7 +18,7 @@ def generate_launch_description():
 
     # Your mapper; publishes to /cmd_vel (default)
     joy2twist = Node(
-        package='ros2_joy_twist',
+        package='mecanum_joystick',
         executable='joy_to_twist',
         name='joy_to_twist',
         output='screen',
