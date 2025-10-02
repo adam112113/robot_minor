@@ -112,7 +112,8 @@ class MecanumSerialDriver(Node):
         rpm_rr = int(self._clamp_rpm(w_rr))
 
         # Build framed message: <FL,FR,RL,RR>\n
-        msg = f"<{rpm_fl},{rpm_fr},{rpm_rl},{rpm_rr}>\n"
+        # msg = f"<{rpm_fl},{rpm_fr},{rpm_rl},{rpm_rr}>\n"
+        msg = f"<{w_fl},{w_fr},{w_rl},{w_rr}>\n"
 
         if self.ser:
             try:
