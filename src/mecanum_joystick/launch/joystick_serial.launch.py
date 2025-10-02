@@ -26,9 +26,9 @@ def generate_launch_description():
                 "axis_linear.x": 1,
                 "axis_linear.y": 0,
                 "axis_angular.yaw": 3,
-                "scale_linear.x": 0.1,
-                "scale_linear.y": 0.1,
-                "scale_angular.yaw": 0.1,
+                "scale_linear.x": 0.01,
+                "scale_linear.y": 0.01,
+                "scale_angular.yaw": 0.01,
                 # set buttons/enable as you like
                 "enable_button": 6,
                 "enable_turbo_button": 7,
