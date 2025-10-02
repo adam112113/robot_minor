@@ -29,7 +29,7 @@ class MecanumSerialDriver(Node):
         self.declare_parameter('wheel_radius', 0.033)  # meters
         self.declare_parameter('wheel_separation_x', 0.375)  # front-back distance (m)
         self.declare_parameter('wheel_separation_y', 0.290)  # left-right distance (m)
-        self.declare_parameter('max_rpm', 3000)  # optional limiting
+        self.declare_parameter('max_rpm', 10)  # optional limiting
         self.declare_parameter('send_rate_hz', 20.0)  # how many cmd messages/sec max
 
         self.port = self.get_parameter('port').get_parameter_value().string_value
