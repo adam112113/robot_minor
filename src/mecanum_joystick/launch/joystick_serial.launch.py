@@ -33,7 +33,7 @@ def generate_launch_description():
                 "enable_button": 6,
                 "enable_turbo_button": 7,
                 "require_enable_button": True,
-            }],.5, 52.5, 9
+            }]
         ),
 
         # our serial driver
