@@ -48,7 +48,7 @@ def generate_launch_description():
                 "wheel_radius": 0.033,
                 "wheel_separation_x": 0.375,
                 "wheel_separation_y": 0.290,
-                "max_rpm": 3000,
+                "max_rpm": 10,
                 "send_rate_hz": 20.0
             }]
         )
