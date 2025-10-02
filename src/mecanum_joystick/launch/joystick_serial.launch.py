@@ -33,7 +33,7 @@ def generate_launch_description():
                 "enable_button": 6,
                 "enable_turbo_button": 7,
                 "require_enable_button": True,
-            }],
+            }],.5, 52.5, 9
         ),
 
         # our serial driver
@@ -43,7 +43,7 @@ def generate_launch_description():
             name="serial_driver",
             output="screen",
             parameters=[{
-                "port": "/dev/ttyACM1",
+                "port": "/dev/ttyACM0",
                 "baudrate": 115200,
                 "wheel_radius": 0.03,
                 "wheel_separation_x": 0.375,
