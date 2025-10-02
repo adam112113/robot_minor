@@ -100,10 +100,17 @@ class MecanumSerialDriver(Node):
         # inverse kinematics for mecanum:
         # wheel angular velocity w = (1/r) * (vx +/- vy +/- L*wz)
         # order: FL, FR, RL, RR (you can change order but matches our URDF/joint naming)
-        w_fl = (1.0 / self.r) * (vx - vy - self.L * wz)
-        w_fr = (1.0 / self.r) * (vx + vy + self.L * wz)
-        w_rl = (1.0 / self.r) * (vx + vy - self.L * wz)
-        w_rr = (1.0 / self.r) * (vx - vy + self.L * wz)
+        # w_fl = (1.0 / self.r) * (vx - vy - self.L * wz)
+        # w_fr = (1.0 / self.r) * (vx + vy + self.L * wz)
+        # w_rl = (1.0 / self.r) * (vx + vy - self.L * wz)
+        # w_rr = (1.0 / self.r) * (vx - vy + self.L * wz)
+
+        # wheel angular velocity w = (1/r) * (vx +/- vy +/- L*wz)
+        # order: FL, FR, RL, RR
+        w_fl = (1.0 / self.r) * (vx + vy + self.L * wz)  # M1 (Front Left)
+        w_fr = (1.0 / self.r) * (vx - vy - self.L * wz)  # M2 (Front Right)
+        w_rl = (1.0 / self.r) * (vx - vy + self.L * wz)  # M3 (Rear Left)
+        w_rr = (1.0 / self.r) * (vx + vy - self.L * wz)  # M4 (Rear Right)
 
         # Convert rad/s -> RPM (integer)
         rpm_fl = int(self._clamp_rpm(w_fl))
