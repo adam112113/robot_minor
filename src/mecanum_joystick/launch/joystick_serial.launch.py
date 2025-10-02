@@ -43,7 +43,7 @@ def generate_launch_description():
             name="serial_driver",
             output="screen",
             parameters=[{
-                "port": "/dev/ttyACM1",
+                "port": "/dev/ttyACM0",
                 "baudrate": 115200,
                 "wheel_radius": 0.033,
                 "wheel_separation_x": 0.375,
