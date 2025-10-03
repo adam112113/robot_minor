@@ -11,6 +11,23 @@ Good luck and read well!**
 You need to have ROS2 Jazzy installed with Colcon and Python3
 Tutorial ROS2 Jazzy install: 
 Tutorial Colcon install: 
+Here is a quick turturial how to intall colcon, python and 
+```
+sudo apt install python3-colcon-common-extensions
+```
+Installing python3 and other python serveses:
+```
+sudo apt update
+sudo apt install -y python3-pip python3-venv
+```
+Check if python is downloaded correctly
+```
+python3 --version
+```
+An result like this should show up:
+```
+Python 3.12.3
+```
 ## Setting up Git Repository
 First step is to make the workspace to pull all the code in.
 
