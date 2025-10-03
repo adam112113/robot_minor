@@ -69,8 +69,11 @@ class MecanumSerialDriver(Node):
         self._rx_buffer = ""
 
         # Start a thread to continuously read serial and publish feedback
-        self._reader_thread = threading.Thread(target=self._serial_reader_thread, daemon=True)
-        self._reader_thread.start()
+
+        self.timer = self.create_timer(0.1, self._serial_reader_thread)
+
+        # self._reader_thread = threading.Thread(target=self._serial_reader_thread, daemon=True)
+        # self._reader_thread.start()
 
         self.get_logger().info("Mecanum serial driver ready")
 
