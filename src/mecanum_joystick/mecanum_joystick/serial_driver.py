@@ -121,6 +121,7 @@ class MecanumSerialDriver(Node):
         # Build framed message: <FL,FR,RL,RR>\n
         # msg = f"<{rpm_fl},{rpm_fr},{rpm_rl},{rpm_rr}>\n"
         msg = f"<{w_fl},{w_fr},{w_rl},{w_rr}>\n"
+        print(msg)
 
         if self.ser:
             try:
