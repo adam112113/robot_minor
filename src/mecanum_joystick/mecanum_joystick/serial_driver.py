@@ -107,10 +107,10 @@ class MecanumSerialDriver(Node):
 
         # wheel angular velocity w = (1/r) * (vx +/- vy +/- L*wz)
         # order: FL, FR, RL, RR
-        w_fl = (1.0 / self.r) * (vx + vy + self.L * wz)  # M1 (Front Left)
-        w_fr = (1.0 / self.r) * (vx - vy - self.L * wz)  # M2 (Front Right)
-        w_rl = (1.0 / self.r) * (vx - vy + self.L * wz)  # M3 (Rear Left)
-        w_rr = (1.0 / self.r) * (vx + vy - self.L * wz)  # M4 (Rear Right)
+        w_fl = (1.0 / self.r) * (vx - vy + self.L * wz)  # M1 (Front Left)
+        w_fr = (1.0 / self.r) * (vx + vy + self.L * wz)  # M2 (Front Right)
+        w_rl = (1.0 / self.r) * (vx + vy + self.L * wz)  # M3 (Rear Left)
+        w_rr = (1.0 / self.r) * (vx - vy - self.L * wz)  # M4 (Rear Right)
 
         # Convert rad/s -> RPM (integer)
         rpm_fl = int(self._clamp_rpm(w_fl))
@@ -121,7 +121,6 @@ class MecanumSerialDriver(Node):
         # Build framed message: <FL,FR,RL,RR>\n
         # msg = f"<{rpm_fl},{rpm_fr},{rpm_rl},{rpm_rr}>\n"
         msg = f"<{w_fl},{w_fr},{w_rl},{w_rr}>\n"
-        print(msg)
 
         if self.ser:
             try:
