@@ -194,17 +194,17 @@ class MecanumSerialDriver(Node):
                     self.get_logger().warning(f"Non-int feedback: '{raw}'")
                     continue
 
-                # convert RPM -> rad/s for JointState velocities
-                vel_rad_s = [(rpm * 2.0 * math.pi) / 60.0 for rpm in rpm_vals]
+            # convert RPM -> rad/s for JointState velocities
+            vel_rad_s = [(rpm * 2.0 * math.pi) / 60.0 for rpm in rpm_vals]
 
-                # publish JointState
-                js = JointState()
-                js.header.stamp = self.get_clock().now().to_msg()
-                js.name = joint_names
-                js.velocity = vel_rad_s
-                self.joint_pub.publish(js)
+            # publish JointState
+            js = JointState()
+            js.header.stamp = self.get_clock().now().to_msg()
+            js.name = joint_names
+            js.velocity = vel_rad_s
+            self.joint_pub.publish(js)
 
-                self.get_logger().debug(f"RX parsed rpm={rpm_vals}")
+            self.get_logger().debug(f"RX parsed rpm={rpm_vals}")
 
         except Exception as e:
             self.get_logger().error(f"Serial read error: {e}")
