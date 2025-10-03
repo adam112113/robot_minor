@@ -9,7 +9,7 @@ Good luck and read well!**
 
 ## Prequisits
 You need to have ROS2 Jazzy installed with Colcon and Python3
-Tutorial ROS2 Jazzy install: 
+Tutorial ROS2 Jazzy install: https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html
 Tutorial Colcon install: 
 Here is a quick turturial how to intall colcon, python and 
 ```
@@ -50,7 +50,7 @@ Start the bleutooth services
 ```
 bluetoothctl
 ```
-**Now is the moment to get the controller into pairing mode**
+**Now is the moment to get the controller into pairing mode**\n
 Inside the new prompt enter:
 ```
 agent on
