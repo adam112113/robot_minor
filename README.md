@@ -50,7 +50,7 @@ Start the bleutooth services
 ```
 bluetoothctl
 ```
-**Now is the moment to get the controller into pairing mode**\n
+**Now is the moment to get the controller into pairing mode**
 Inside the new prompt enter:
 ```
 agent on
