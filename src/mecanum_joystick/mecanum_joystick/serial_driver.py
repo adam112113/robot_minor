@@ -110,17 +110,16 @@ class MecanumSerialDriver(Node):
 
         # wheel angular velocity w = (1/r) * (vx +/- vy +/- L*wz)
         # order: FL, FR, RL, RR
-        w_fl = (1.0 / self.r) * (vx - vy + self.L * wz)  # M1 (Front Left)
+        w_fl = (1.0 / self.r) * (vx - vy - self.L * wz)  # M1 (Front Left)
         w_fr = (1.0 / self.r) * (vx + vy + self.L * wz)  # M2 (Front Right)
-        w_rl = (1.0 / self.r) * (vx + vy + self.L * wz)  # M3 (Rear Left)
-        w_rr = (1.0 / self.r) * (vx - vy - self.L * wz)  # M4 (Rear Right)
+        w_rl = (1.0 / self.r) * (vx + vy - self.L * wz)  # M3 (Rear Left)
+        w_rr = (1.0 / self.r) * (vx - vy + self.L * wz)  # M4 (Rear Right)
 
         # Convert rad/s -> RPM (integer)
-        # Not being used. Still avaiable in case
-        # rpm_fl = int(self._clamp_rpm(w_fl))
-        # rpm_fr = int(self._clamp_rpm(w_fr))
-        # rpm_rl = int(self._clamp_rpm(w_rl))
-        # rpm_rr = int(self._clamp_rpm(w_rr))
+        rpm_fl = int(self._clamp_rpm(w_fl))
+        rpm_fr = int(self._clamp_rpm(w_fr))
+        rpm_rl = int(self._clamp_rpm(w_rl))
+        rpm_rr = int(self._clamp_rpm(w_rr))
 
         # Build framed message: <FL,FR,RL,RR>\n
         # msg = f"<{rpm_fl},{rpm_fr},{rpm_rl},{rpm_rr}>\n"
@@ -143,23 +142,126 @@ class MecanumSerialDriver(Node):
         return rpm
 
     def _serial_reader_thread(self):
-               # self.get_logger().info("Timer fired: checking serial buffer...")
-        line = self.ser.readline().decode('utf-8').strip()
-      #  self.get_logger().info(line)
+        """
+        Continuously read from serial, accumulate until newline, parse framed messages.
+        Expected reply format from Arduino: <FL,FR,RL,RR>\n   (integers RPM)
+        On parse, publish sensor_msgs/JointState
+        """
+        # joint names consistent with your URDF
+        joint_names = ['front_left_wheel_joint', 'front_right_wheel_joint',
+                       'rear_left_wheel_joint', 'rear_right_wheel_joint']
+        
 
-        parts = line.strip('[]').split(',')
-        #self.get_logger().info(f"Received from Arduino: {parts}")
-        #self.get_logger().info(f"Parts length: {len(parts)}")
-        if len(parts) == 4:     
-            fl, fr, rl, rr = [float(x) for x in parts]
+        if not self.ser:
+            # no serial connection
+            return
 
-            # msg = Twist()
-            # msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
-            # msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
-            # msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
+        try:
+            # read whatever is available, non-blocking
+            data = self.ser.read(256)  
+            if not data:
+                return  # nothing this cycle
 
-            # self.feedbackPub.publish(msg)
+            try:
+                chunk = data.decode('utf-8', errors='ignore')
+            except Exception:
+                chunk = ''
+            if not chunk:
+                return
 
+            # append to RX buffer
+            self._rx_buffer += chunk
+
+            # process complete framed messages: they look like <...>\n
+            while True:
+                start = self._rx_buffer.find('<')
+                end = self._rx_buffer.find('>', start + 1)
+                if start == -1 or end == -1:
+                    break  # wait for complete frame
+
+                raw = self._rx_buffer[start+1:end]
+                self._rx_buffer = self._rx_buffer[end+1:]  # drop processed part
+
+                # parse CSV of four ints
+                parts = [p.strip() for p in raw.split(',') if p.strip()]
+                if len(parts) != 4:
+                    self.get_logger().warning(f"Bad feedback format: '{raw}'")
+                    continue
+
+                try:
+                    rpm_vals = [int(p) for p in parts]
+                except ValueError:
+                    self.get_logger().warning(f"Non-int feedback: '{raw}'")
+                    continue
+
+                # convert RPM -> rad/s for JointState velocities
+                vel_rad_s = [(rpm * 2.0 * math.pi) / 60.0 for rpm in rpm_vals]
+
+                # publish JointState
+                js = JointState()
+                js.header.stamp = self.get_clock().now().to_msg()
+                js.name = joint_names
+                js.velocity = vel_rad_s
+                self.joint_pub.publish(js)
+
+                self.get_logger().debug(f"RX parsed rpm={rpm_vals}")
+
+        except Exception as e:
+            self.get_logger().error(f"Serial read error: {e}")
+
+        # while rclpy.ok():
+        #     if not self.ser:
+        #         time.sleep(0.5)
+        #         continue
+        #     try:
+        #         data = self.ser.read(256)  # read up to 256 bytes
+        #         if not data:
+        #             time.sleep(0.01)
+        #             continue
+        #         try:
+        #             chunk = data.decode('utf-8', errors='ignore')
+        #         except Exception:
+        #             chunk = ''
+        #         if not chunk:
+        #             continue
+        #         self._rx_buffer += chunk
+
+        #         # process complete framed messages: they look like <...>\n
+        #         while True:
+        #             start = self._rx_buffer.find('<')
+        #             end = self._rx_buffer.find('>', start+1)
+        #             if start == -1 or end == -1:
+        #                 break
+        #             raw = self._rx_buffer[start+1:end]
+        #             # remove processed prefix
+        #             self._rx_buffer = self._rx_buffer[end+1:]
+
+        #             # parse CSV of four ints
+        #             parts = [p.strip() for p in raw.split(',') if p.strip() != '']
+        #             if len(parts) != 4:
+        #                 self.get_logger().warning(f"Bad feedback format: '{raw}'")
+        #                 continue
+        #             try:
+        #                 rpm_vals = [int(p) for p in parts]
+        #             except ValueError:
+        #                 self.get_logger().warning(f"Non-int feedback: '{raw}'")
+        #                 continue
+
+        #             # convert RPM -> rad/s for JointState velocities
+        #             vel_rad_s = [ (rpm * 2.0 * math.pi) / 60.0 for rpm in rpm_vals ]
+
+        #             # publish JointState
+        #             js = JointState()
+        #             js.header.stamp = self.get_clock().now().to_msg()
+        #             js.name = joint_names
+        #             js.velocity = vel_rad_s
+        #             # positions and efforts left empty
+        #             self.joint_pub.publish(js)
+        #             self.get_logger().debug(f"RX parsed rpm={rpm_vals}")
+
+        #     except Exception as e:
+        #         self.get_logger().error(f"Serial read error: {e}")
+        #         time.sleep(0.1)
 
 def main(args=None):
     rclpy.init(args=args)
