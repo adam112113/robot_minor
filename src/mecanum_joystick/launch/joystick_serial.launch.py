@@ -45,11 +45,11 @@ def generate_launch_description():
             parameters=[{
                 "port": "/dev/ttyACM0",
                 "baudrate": 115200,
-                "wheel_radius": 0.03,
-                "wheel_separation_x": 0.375,
-                "wheel_separation_y": 0.290,
-                "max_rpm": 10,
-                "send_rate_hz": 20.0
+                # "wheel_radius": 0.03,
+                # "wheel_separation_x": 0.375,
+                # "wheel_separation_y": 0.290,
+                # "max_rpm": 10,
+                # "send_rate_hz": 20.0
             }]
         )
     ])
