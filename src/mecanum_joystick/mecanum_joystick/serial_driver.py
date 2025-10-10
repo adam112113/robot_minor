@@ -577,9 +577,9 @@ SERIAL_PORT = '/dev/ttyACM0'
 BAUD_RATE = 115200
 
 # IN MM
-RADIUS = (60)/1000
-LX = (375/2)/1000
-LY = (290/2)/1000
+RADIUS = (60/2)/1000
+LX = (330/2)/1000
+LY = (26/2)/1000
 
 class MotionController(Node):
     def __init__(self):
@@ -596,7 +596,7 @@ class MotionController(Node):
         self.feedbackSub = self.create_subscription(Float32MultiArray, '/fb_rot', self.fbCallback, 10)
         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
         self.last_feedback_time = 0.0
-        self.feedback_interval = 0.1  # seconds (i.e. 10 Hz)
+        self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
         self.timer = self.create_timer(0.01, self.read_serial_feedback)
         # self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
@@ -656,9 +656,9 @@ class MotionController(Node):
             
     def read_serial_feedback(self):
        # self.get_logger().info("Timer fired: checking serial buffer...")
-        current_time = time.time()
-        if current_time - self.last_feedback_time < self.feedback_interval:
-            return  # Skip until interval elapsed
+        # current_time = time.time()
+        # if current_time - self.last_feedback_time < self.feedback_interval:
+        #     return  # Skip until interval elapsed
         try:
             line = self.ser.readline().decode('utf-8').strip()
           #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
@@ -670,7 +670,7 @@ class MotionController(Node):
                 #self.get_logger().info(f"Received from Arduino: {parts}")
                 #self.get_logger().info(f"Parts length: {len(parts)}")
                 # print(line)
-                #float(line)SSS
+                #float(line)
                 print(line)
                 #if len(parts):     
                 fl, fr, rl, rr = [float(x) for x in parts]
