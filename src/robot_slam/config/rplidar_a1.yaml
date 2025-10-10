@@ -1,0 +1,8 @@
+rplidar_composition:
+  ros__parameters:
+    serial_port: /dev/ttyUSB0
+    serial_baudrate: 115200        # 115200 for A1, 256000 for A2/A3
+    frame_id: laser
+    inverted: false
+    angle_compensate: true
+    scan_mode: Standard            # or Express if supported
