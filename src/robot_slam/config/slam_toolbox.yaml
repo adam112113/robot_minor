@@ -12,6 +12,10 @@ slam_toolbox:
     map_update_interval: 2.0
     publish_tf: true
 
+    use_scan_matching: true
+    scan_queue_size: 10
+
+
 
 # slam_toolbox:
 #   ros__parameters:
