@@ -3,12 +3,38 @@
 <package format="3">
   <name>robot_slam</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="a.drysdale@student.han.nl">Adam</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Mecanum robot driver, odometry, and SLAM integration package</description>
 
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <!-- Build tools -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- Core dependencies -->
   <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf_transformations</depend>
+
+  <!-- For launch and composition -->
   <depend>launch</depend>
+  <depend>launch_ros</depend>
+
+  <!-- External integrations (not built from source here) -->
+  <exec_depend>rplidar_ros</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>joy</exec_depend>
+  <exec_depend>ros2_joy_twist</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- Testing -->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
@@ -19,29 +45,42 @@
   </export>
 </package>
 
+
+
 <!-- <?xml version="1.0"?>
 <package format="3">
   <name>robot_slam</name>
-  <version>0.0.1</version>
-  <description>Joystick to Arduino serial bridge for a 4-wheeled mecanum robot</description>
-  <maintainer email="your@email.com">Your Name</maintainer>
-  <license>BSD-3-Clause</license>
+  <version>0.1.0</version>
+  <description>Mecanum robot driver, odometry, and SLAM integration package</description>
 
-  <!-- Build tool -->
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_python</buildtool_depend>
 
-  <!-- Runtime deps -->
   <depend>rclpy</depend>
+  <depend>launch</depend>
+  <depend>tf2_ros</depend>
   <depend>geometry_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rplidar_ros</depend>
+  <depend>navigation2</depend>
+  <depend>nav2_bringup</depend>
+  <depend>turtlebot3</depend>
+  <depend>turtlebot3_gazebo</depend>
+  <depend>geometry</depend>
+  <depend>tf_transformations</depend>
+  <depend>math</depend>
 
-  <!-- External Python dep -->
-  <exec_depend>pyserial</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
 
-  <!-- Testing -->
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
@@ -50,3 +89,23 @@
 
 
 
+<!-- <?xml version="1.0"?>
+<package format="3">
+  <name>mecanum_joystick</name>
+  <version>0.0.1</version>
+  <description>Joystick to Arduino bridge for mecanum robot</description>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <exec_depend>pyserial</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+</package> -->
