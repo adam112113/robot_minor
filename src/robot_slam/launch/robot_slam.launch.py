@@ -100,14 +100,30 @@ def generate_launch_description():
         }],
     )
 
+    static_tf_footprint_to_base = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        arguments=['0', '0', '0.0', '0', '0', '0', 'base_footprint', 'base_link']
+    )
+
     # Static transform base_link -> laser
     static_tf_base_to_laser = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
-        name='static_base_to_laser',
-        output='screen',
-        arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
+        arguments=['--x', '0', '--y', '0', '--z', '0.15',
+                '--roll', '0', '--pitch', '0', '--yaw', '0',
+                '--frame-id', 'base_link', '--child-frame-id', 'laser'],
     )
+
+    
+
+    # static_tf_base_to_laser = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_base_to_laser',
+    #     output='screen',
+    #     arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
+    # )
 
     # nav2 (bringup)
     nav2 = IncludeLaunchDescription(
@@ -127,18 +143,28 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': 'False',
             'slam_params_file': slam_params_file,
-            'queue_size': 10,
         }.items()
     )
 
+    # motion_controller_node = Node(
+    #     package='robot_slam,
+    #     executable='motion_controller_node',  
+    #     name='motion_controller_node',
+    #     output='screen',
+    #     parameters=[{
+    #         'port': '/dev/ttyACM0',  # Arduino serial port
+    #         'baud_rate': 115200      # Match Arduino sketch
+    #     }]
+    # )
+
     # RViz
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
-        output='screen'
-    )
+    # rviz2 = Node(
+    #     package='rviz2',
+    #     executable='rviz2',
+    #     name='rviz2',
+    #     arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
+    #     output='screen'
+    # )
 
     return LaunchDescription([
         joy,
@@ -146,6 +172,7 @@ def generate_launch_description():
         odometry,
         serial_driver,
         rplidar,
+        static_tf_footprint_to_base,
         static_tf_base_to_laser,
         nav2,
         slam_toolbox,
