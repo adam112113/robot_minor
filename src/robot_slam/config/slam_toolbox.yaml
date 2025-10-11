@@ -14,6 +14,7 @@ slam_toolbox:
 
     use_scan_matching: true
     scan_queue_size: 10
+    queue_size: 10
 
 
 
