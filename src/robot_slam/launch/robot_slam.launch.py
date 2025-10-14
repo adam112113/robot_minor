@@ -158,13 +158,13 @@ def generate_launch_description():
     # )
 
     # RViz
-    # rviz2 = Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
-    #     output='screen'
-    # )
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
+        output='screen'
+    )
 
     return LaunchDescription([
         joy,
