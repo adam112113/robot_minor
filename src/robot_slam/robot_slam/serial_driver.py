@@ -14,7 +14,7 @@ BAUD_RATE = 115200
 # IN MM
 RADIUS = (60/2)/1000
 LX = (330/2)/1000
-LY = (26/2)/1000
+LY = (260/2)/1000
 
 class MotionController(Node):
     def __init__(self):
@@ -82,7 +82,7 @@ class MotionController(Node):
         motor_msg.data = w_speeds.flatten().tolist()
         self.motorPublisher.publish(motor_msg)
 
-        command = f"[{w_speeds[0,0]:.4f},{w_speeds[1,0]:.4f},{w_speeds[2,0]:.4f},{w_speeds[3,0]:.4f}]\n"
+        command = f"[{w_speeds[0,0]:.2f},{w_speeds[1,0]:.2f},{w_speeds[2,0]:.2f},{w_speeds[3,0]:.2f}]\n"
         try:
             self.ser.write(command.encode('utf-8'))
           #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
@@ -106,9 +106,13 @@ class MotionController(Node):
                 #self.get_logger().info(f"Parts length: {len(parts)}")
                 # print(line)
                 #float(line)
-                print(line)
-                #if len(parts):     
-                fl, fr, rl, rr = [float(x) for x in parts]
+                # print(line)
+                #if len(parts):
+                raw_vals = [float(x) for x in parts]
+                fl, fr, rl, rr = raw_vals
+                self.get_logger().debug(f"RAW wheels: {raw_vals}, interpreted (rad/s): {[fl,fr,rl,rr]}")
+                # inside read_serial_feedback after parsing fl,fr,rl,rr
+                self.get_logger().info(f"RAW wheels (from Arduino): fl={fl:.2f} fr={fr:.2f} rl={rl:.2f} rr={rr:.2f}")
 
                 msg = Twist()
                 msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
@@ -117,7 +121,7 @@ class MotionController(Node):
 
                 self.feedbackPub.publish(msg)
         except Exception as e:
-            self.get_logger().error(f"Failed to send command: {e}")
+            self.get_logger().error(f"Failed to read command: {e}")
            # self.get_logger().info(f"Published /fb_speed: {msg.linear.x:.2f}, {msg.angular.z:.2f}")
 
 

@@ -100,13 +100,13 @@ def generate_launch_description():
         }],
     )
 
-    static_tf_footprint_to_base = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        arguments=['0', '0', '0.0', '0', '0', '0', 'base_footprint', 'base_link']
-    )
+    # static_tf_footprint_to_base = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     arguments=['0', '0', '0.0', '0', '0', '0', 'base_footprint', 'base_link']
+    # )
 
-    # Static transform base_link -> laser
+    #Static transform base_link -> laser
     static_tf_base_to_laser = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -128,7 +128,7 @@ def generate_launch_description():
     # nav2 (bringup)
     nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'navigation_launch.py')
+            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
         ),
         launch_arguments={'use_sim_time': 'False'}.items()
     )
@@ -158,25 +158,26 @@ def generate_launch_description():
     # )
 
     # RViz
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
-        output='screen'
-    )
+    # rviz2 = Node(
+    #     package='rviz2',
+    #     executable='rviz2',
+    #     name='rviz2',
+    #     arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
+    #     output='screen'
+    # )
 
     return LaunchDescription([
         joy,
         joy2twist,
         odometry,
         serial_driver,
+        # motion_controller_node,
         rplidar,
-        static_tf_footprint_to_base,
+        # static_tf_footprint_to_base,
         static_tf_base_to_laser,
-        nav2,
-        slam_toolbox,
-        rviz2,
+        # nav2,
+        slam_toolbox, 
+        # rviz2,
     ])
 
 
