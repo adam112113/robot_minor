@@ -573,13 +573,13 @@ import serial
 import time
 
 # Serial parameters
-SERIAL_PORT = '/dev/ttyACM1'
+SERIAL_PORT = '/dev/ttyACM0'
 BAUD_RATE = 115200
 
 # IN MM
 RADIUS = (60/2)/1000
 LX = (330/2)/1000
-LY = (26/2)/1000
+LY = (260/2)/1000
 
 class MotionController(Node):
     def __init__(self):
@@ -596,8 +596,8 @@ class MotionController(Node):
         self.feedbackSub = self.create_subscription(Float32MultiArray, '/fb_rot', self.fbCallback, 10)
         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
         self.last_feedback_time = 0.0
-        self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
-        self.timer = self.create_timer(0.01, self.read_serial_feedback)
+        self.feedback_interval = 0.02  # seconds (i.e. 10 Hz)
+        self.timer = self.create_timer(0.2, self.read_serial_feedback)
         # self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
 
@@ -671,7 +671,7 @@ class MotionController(Node):
                 #self.get_logger().info(f"Parts length: {len(parts)}")
                 # print(line)
                 #float(line)
-                print(line)
+                # print(line)
                 #if len(parts):     
                 fl, fr, rl, rr = [float(x) for x in parts]
 

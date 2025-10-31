@@ -1,3 +1,180 @@
+# import rclpy
+# from rclpy.node import Node
+# from geometry_msgs.msg import Twist
+# from sensor_msgs.msg import Joy
+# from std_msgs.msg import Float32MultiArray
+# import numpy as np
+# import serial
+# import time
+
+
+# # ----------------------------
+# # CONSTANTS
+# # ----------------------------
+# SERIAL_PORT = '/dev/ttyACM0'
+# BAUD_RATE = 115200
+
+# # Geometry (meters)
+# RADIUS = (60 / 2) / 1000       # wheel radius = 30 mm = 0.03 m
+# LX = (330 / 2) / 1000          # robot half length (x)
+# LY = (260 / 2) / 1000          # robot half width (y)
+
+# SEND_RATE_HZ = 20.0            # steady command rate to Arduino (Hz)
+# SMOOTHING_ALPHA = 0.2          # smoothing of commanded velocity (0 = none, 1 = instant)
+
+
+# class MotionController(Node):
+#     def __init__(self):
+#         super().__init__("motion_controller_node")
+
+#         # ----------------------------
+#         # SERIAL CONNECTION
+#         # ----------------------------
+#         try:
+#             self.ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+#             self.get_logger().info(f"Opened serial port {SERIAL_PORT}")
+#         except Exception as e:
+#             self.get_logger().error(f"Failed to open serial port: {e}")
+#             raise e
+
+#         # ----------------------------
+#         # ROS INTERFACES
+#         # ----------------------------
+#         self.motorPublisher = self.create_publisher(Float32MultiArray, '/controlspeed', 10)
+#         self.joySubscriber = self.create_subscription(Joy, '/joy', self.joycallback, 10)
+#         self.cmdSubscriber = self.create_subscription(Twist, '/cmd_vel', self.cmdcallback, 10)
+#         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
+
+#         # ----------------------------
+#         # TIMERS
+#         # ----------------------------
+#         self.send_timer = self.create_timer(1.0 / SEND_RATE_HZ, self.send_to_arduino)
+#         self.read_timer = self.create_timer(0.05, self.read_serial_feedback)
+
+#         # ----------------------------
+#         # STATE VARIABLES
+#         # ----------------------------
+#         self.last_w_speeds = np.zeros((4, 1))
+#         self.smooth_vel = np.zeros((3, 1))
+#         self.invKinMatrix = np.array([
+#             [1, -1, -(LX + LY)],
+#             [1,  1,  (LX + LY)],
+#             [1,  1, -(LX + LY)],
+#             [1, -1,  (LX + LY)]
+#         ])
+
+#         self.get_logger().info("Motion controller node started and running.")
+
+
+#     # ---------------------------------------------------
+#     # CALLBACKS
+#     # ---------------------------------------------------
+
+#     def joycallback(self, msg: Joy):
+#         """Called when joystick input arrives."""
+#         x_vel = 0.8 * msg.axes[1]  # forward/backward
+#         y_vel = 0.8 * msg.axes[0]  # strafe
+#         w_z   = 2.0 * msg.axes[3]  # rotation
+
+#         self.update_target_velocity(x_vel, y_vel, w_z)
+
+#     def cmdcallback(self, msg: Twist):
+#         """Called when Twist command arrives."""
+#         self.update_target_velocity(msg.linear.x, msg.linear.y, msg.angular.z)
+
+#     def update_target_velocity(self, x_vel, y_vel, w_z):
+#         """Smooth the velocity command and compute wheel speeds."""
+#         alpha = SMOOTHING_ALPHA
+#         target_vel = np.array([[x_vel], [y_vel], [w_z]])
+#         self.smooth_vel = alpha * target_vel + (1 - alpha) * self.smooth_vel
+
+#         # Inverse kinematics
+#         w_speeds = np.dot((self.invKinMatrix / RADIUS), self.smooth_vel)
+
+#         # Limit to max 30 rad/s
+#         maxOmega = np.max(np.abs(w_speeds))
+#         if maxOmega > 30.0:
+#             w_speeds *= 30.0 / maxOmega
+
+#         self.last_w_speeds = w_speeds
+
+#         # publish to ROS for monitoring (optional)
+#         msg = Float32MultiArray()
+#         msg.data = w_speeds.flatten().tolist()
+#         self.motorPublisher.publish(msg)
+
+
+#     # ---------------------------------------------------
+#     # SERIAL COMMUNICATION
+#     # ---------------------------------------------------
+
+#     def send_to_arduino(self):
+#         """Send wheel speeds at a constant 20 Hz."""
+#         w = self.last_w_speeds
+#         command = f"[{w[0,0]:.3f},{w[1,0]:.3f},{w[2,0]:.3f},{w[3,0]:.3f}]\n"
+#         try:
+#             self.ser.write(command.encode('utf-8'))
+#             # Avoid spamming console – keep this debug only
+#             self.get_logger().debug(f"Sent: {command.strip()}")
+#         except Exception as e:
+#             self.get_logger().error(f"Failed to send command: {e}")
+
+
+#     def read_serial_feedback(self):
+#         """Read feedback from Arduino (rad/s from encoders)."""
+#         try:
+#             line = self.ser.readline().decode('utf-8').strip()
+#             if not line or not line.startswith('['):
+#                 return
+
+#             parts = line.strip('[]').split(',')
+#             if len(parts) != 4:
+#                 return
+
+#             raw_vals = [float(x) for x in parts]
+#             fl, fr, rl, rr = raw_vals
+
+#             # Convert wheel speeds → robot twist
+#             msg = Twist()
+#             msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
+#             msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)
+#             msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4 * (LX + LY)))
+
+#             self.feedbackPub.publish(msg)
+
+#         except Exception as e:
+#             self.get_logger().warn(f"Feedback read error: {e}")
+
+
+#     # ---------------------------------------------------
+#     # CLEANUP
+#     # ---------------------------------------------------
+#     def destroy_node(self):
+#         try:
+#             if self.ser.is_open:
+#                 self.ser.close()
+#         except Exception:
+#             pass
+#         super().destroy_node()
+
+
+
+# def main(args=None):
+#     rclpy.init(args=args)
+#     node = MotionController()
+#     try:
+#         rclpy.spin(node)
+#     except KeyboardInterrupt:
+#         pass
+#     finally:
+#         node.destroy_node()
+#         rclpy.shutdown()
+
+
+# if __name__ == '__main__':
+#     main()
+
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -30,11 +207,14 @@ class MotionController(Node):
         self.cmdSubscriber = self.create_subscription(Twist, '/cmd_vel', self.cmdcallback, 10)
         self.feedbackSub = self.create_subscription(Float32MultiArray, '/fb_rot', self.fbCallback, 10)
         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
-        self.last_feedback_time = 0.0
-        self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
-        self.timer = self.create_timer(0.01, self.read_serial_feedback)
-        # self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
+        # self.last_feedback_time = 0.0
+        # self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
+        # self.timer = self.create_timer(0.05, self.read_serial_feedback)
+        self.serialRead = self.create_timer(0.1, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
+
+        # self.last_w_speeds = np.zeros((4,1))
+        # self.send_timer = self.create_timer(0.05, self.send_to_arduino)  # 20 Hz steady
 
         self.feedbackMsg = Twist()
         self.invKinMatrix = np.array([
@@ -76,53 +256,80 @@ class MotionController(Node):
             w_speeds = w_speeds * speedFactor
         return w_speeds
 
+    # def publish_speeds(self, w_speeds):
+    #     # motor_msg = Float32MultiArray()
+    #     # motor_msg.data = w_speeds.flatten().tolist()
+    #     # self.motorPublisher.publish(motor_msg)
+
+    #     self.last_w_speeds = w_speeds
+
+    # def send_to_arduino(self):
+    #     # Always send at 20 Hz from timer thread, independent of joystick rate
+    #     command = f"[{self.last_w_speeds[0,0]:.2f},{self.last_w_speeds[1,0]:.2f},{self.last_w_speeds[2,0]:.2f},{self.last_w_speeds[3,0]:.2f}]\n"
+    #     try:
+    #         self.ser.write(command.encode('utf-8'))
+    #     except Exception as e:
+    #         self.get_logger().error(f"Serial write failed: {e}")
+
     def publish_speeds(self, w_speeds):
         # Publish to ROS topic
         motor_msg = Float32MultiArray()
         motor_msg.data = w_speeds.flatten().tolist()
         self.motorPublisher.publish(motor_msg)
 
-        command = f"[{w_speeds[0,0]:.2f},{w_speeds[1,0]:.2f},{w_speeds[2,0]:.2f},{w_speeds[3,0]:.2f}]\n"
+        command = f"[{w_speeds[0,0]:.3f},{w_speeds[1,0]:.3f},{w_speeds[2,0]:.3f},{w_speeds[3,0]:.3f}]\n"
+
+        # now = time.time()
+        # if not hasattr(self, 'last_send_time'):
+        #     self.last_send_time = 0.0
+
+        # Only send every 50 ms (20 Hz)
+        # if now - self.last_send_time >= 0.02:
         try:
             self.ser.write(command.encode('utf-8'))
-          #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
+            # self.ser.flush()
+            # self.get_logger().info(f"Sent to Arduino: {command.strip()}")
         except Exception as e:
             self.get_logger().error(f"Failed to send command: {e}")
+            # self.last_send_time = now
             
     def read_serial_feedback(self):
        # self.get_logger().info("Timer fired: checking serial buffer...")
         # current_time = time.time()
         # if current_time - self.last_feedback_time < self.feedback_interval:
         #     return  # Skip until interval elapsed
-        try:
-            line = self.ser.readline().decode('utf-8').strip()
+        # try:
+        line = self.ser.readline().decode('utf-8', errors='ignore').strip()
+            # if not line.startswith('[') or line.endswith(']'):
+            #     return
           #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
         
         #  self.get_logger().info(line)
 
-            parts = line.strip('[]').split(',')
-            if len(parts) == 4:
-                #self.get_logger().info(f"Received from Arduino: {parts}")
-                #self.get_logger().info(f"Parts length: {len(parts)}")
-                # print(line)
-                #float(line)
-                # print(line)
-                #if len(parts):
-                raw_vals = [float(x) for x in parts]
-                fl, fr, rl, rr = raw_vals
-                self.get_logger().debug(f"RAW wheels: {raw_vals}, interpreted (rad/s): {[fl,fr,rl,rr]}")
-                # inside read_serial_feedback after parsing fl,fr,rl,rr
-                self.get_logger().info(f"RAW wheels (from Arduino): fl={fl:.2f} fr={fr:.2f} rl={rl:.2f} rr={rr:.2f}")
+        parts = line.strip('[]').split(',')
+        if len(parts) == 4:
+            #self.get_logger().info(f"Received from Arduino: {parts}")
+            #self.get_logger().info(f"Parts length: {len(parts)}")
+            # print(line)
+            #float(line)
+            # print(line)
+            #if len(parts):
+            # raw_vals = [float(x) for x in parts]
+            # fl, fr, rl, rr = raw_vals
+            fl, fr, rl, rr = [float(x) for x in parts]
+            # self.get_logger().debug(f"RAW wheels: {raw_vals}, interpreted (rad/s): {[fl,fr,rl,rr]}")
+            # inside read_serial_feedback after parsing fl,fr,rl,rr
+            # self.get_logger().info(f"RAW wheels (from Arduino): fl={fl:.3f} fr={fr:.3f} rl={rl:.3f} rr={rr:.3f}")
 
-                msg = Twist()
-                msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
-                msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
-                msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
+            msg = Twist()
+            msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
+            msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
+            msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
 
-                self.feedbackPub.publish(msg)
-        except Exception as e:
-            self.get_logger().error(f"Failed to read command: {e}")
-           # self.get_logger().info(f"Published /fb_speed: {msg.linear.x:.2f}, {msg.angular.z:.2f}")
+            self.feedbackPub.publish(msg)
+        # except Exception as e:
+        #     self.get_logger().error(f"Failed to read command: {e}")
+        #    # self.get_logger().info(f"Published /fb_speed: {msg.linear.x:.2f}, {msg.angular.z:.2f}")
 
 
 def main(args=None):
