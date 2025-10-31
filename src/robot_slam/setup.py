@@ -34,6 +34,7 @@ setup(
         'console_scripts': [
             'serial_driver = robot_slam.serial_driver:main',
             'odometry = robot_slam.odometry:main',
+            'nav_control = robot_slam.nav_control:main',
         ],
     },
 )
