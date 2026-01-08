@@ -100,7 +100,7 @@ def generate_launch_description():
             'serial_port': '/dev/ttyUSB0',
             'serial_baudrate': 115200,     # A1 standard baudrate
             'frame_id': 'laser',  # Match TF tree
-            'inverted': False,
+            'inverted': True,
             'angle_compensate': True,
             # 'scan_mode': '',               # Empty string for A1 (will auto-detect)
             # 'channel_type': 'serial',      # Use serial communication
@@ -127,38 +127,38 @@ def generate_launch_description():
     #     ],
     # )
 
-    # # Static TF: base_link -> taitc_lidar_link (lidar position on robot)
-    # static_tf_base_to_laser = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='static_base_to_laser',
-    #     output='screen',
-    #     arguments=[
-    #         '--x', '0.0',
-    #         '--y', '0.0',
-    #         '--z', '0.15',  # Lidar is 15cm above base_link
-    #         '--roll', '0.0',
-    #         '--pitch', '0.0',
-    #         '--yaw', '0.0',
-    #         '--frame-id', 'base_link',
-    #         '--child-frame-id', 'laser'
-    #     ],
-    # )
-
-
+    # Static TF: base_link -> static_lidar_link (lidar position on robot)
     static_tf_base_to_laser = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_base_to_laser',
         output='screen',
-        arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
+        arguments=[
+            '--x', '0.0',
+            '--y', '0.0',
+            '--z', '0.15',  # Lidar is 15cm above base_link
+            '--roll', '0.0',
+            '--pitch', '0.0',
+            '--yaw', '0.0',
+            '--frame-id', 'base_link',
+            '--child-frame-id', 'laser'
+        ],
     )
+
+
+    # static_tf_base_to_laser = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_base_to_laser',
+    #     output='screen',
+    #     arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
+    # )
 
     
     # nav2 (bringup)
     nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
+            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'navigation_launch.py')
         ),
         launch_arguments={'use_sim_time': 'False'}.items()
     )
@@ -191,8 +191,8 @@ def generate_launch_description():
         odometry,
         serial_driver,
         rplidar,
-        # static_tf_footprint_to_base,  # odom->base_footprint (from odometry), base_footprint->base_link (static)
-        static_tf_base_to_laser,      # base_link->laser (static)
+        # static_tf_footprint_to_base,  # base_footprint->base_link (static)
+        static_tf_base_to_laser,      # base_link->static_lidar_link (static)
         # nav2,                        # DISABLED - Only needed after mapping is complete
         slam_toolbox,                 # Generates the map from lidar scans
         # rviz2,                       # COMMENTED - Start manually: ros2 run rviz2 rviz2
