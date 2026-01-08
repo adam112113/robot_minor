@@ -277,7 +277,7 @@ class MotionController(Node):
         motor_msg.data = w_speeds.flatten().tolist()
         self.motorPublisher.publish(motor_msg)
 
-        command = f"[{w_speeds[0,0]:.3f},{w_speeds[1,0]:.3f},{w_speeds[2,0]:.3f},{w_speeds[3,0]:.3f}]\n"
+        command = f"[{w_speeds[0,0]:.4f},{w_speeds[1,0]:.4f},{w_speeds[2,0]:.4f},{w_speeds[3,0]:.4f}]\n"
 
         # now = time.time()
         # if not hasattr(self, 'last_send_time'):
@@ -288,7 +288,7 @@ class MotionController(Node):
         try:
             self.ser.write(command.encode('utf-8'))
             # self.ser.flush()
-            # self.get_logger().info(f"Sent to Arduino: {command.strip()}")
+            self.get_logger().info(f"Sent to Arduino: {command.strip()}")
         except Exception as e:
             self.get_logger().error(f"Failed to send command: {e}")
             # self.last_send_time = now
@@ -308,7 +308,7 @@ class MotionController(Node):
 
         parts = line.strip('[]').split(',')
         if len(parts) == 4:
-            #self.get_logger().info(f"Received from Arduino: {parts}")
+            self.get_logger().info(f"Received from Arduino: {parts}")
             #self.get_logger().info(f"Parts length: {len(parts)}")
             # print(line)
             #float(line)

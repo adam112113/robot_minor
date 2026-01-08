@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>mecanum_joystick</name>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
   <description>Joystick to Arduino serial bridge for a 4-wheeled mecanum robot</description>
   <maintainer email="your@email.com">Your Name</maintainer>
-  <license>BSD-3-Clause</license>
+  <license>MIT</license>
 
   <!-- Build tool -->
   <buildtool_depend>ament_python</buildtool_depend>
@@ -13,14 +13,20 @@
   <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
-  <depend>std_msgs</depend>
+  <depend>joy</depend>
+  <depend>turtlesim</depend>
+
+  <!-- For launch and composition -->
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
 
   <!-- External Python dep -->
   <exec_depend>pyserial</exec_depend>
+  <exec_depend>teleop_twist_joy</exec_depend>
 
   <!-- Testing -->
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <!-- <test_depend>ament_lint_auto</test_depend> -->
+  <!-- <test_depend>ament_lint_common</test_depend> -->
 
   <export>
     <build_type>ament_python</build_type>

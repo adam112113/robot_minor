@@ -595,10 +595,10 @@ class MotionController(Node):
         self.cmdSubscriber = self.create_subscription(Twist, '/cmd_vel', self.cmdcallback, 10)
         self.feedbackSub = self.create_subscription(Float32MultiArray, '/fb_rot', self.fbCallback, 10)
         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
-        self.last_feedback_time = 0.0
-        self.feedback_interval = 0.02  # seconds (i.e. 10 Hz)
-        self.timer = self.create_timer(0.2, self.read_serial_feedback)
-        # self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
+        # self.last_feedback_time = 0.0
+        # self.feedback_interval = 0.02  # seconds (i.e. 10 Hz)
+        # self.timer = self.create_timer(0.2, self.read_serial_feedback)
+        self.serialRead = self.create_timer(0.1, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
 
         self.feedbackMsg = Twist()
@@ -650,7 +650,7 @@ class MotionController(Node):
         command = f"[{w_speeds[0,0]:.4f},{w_speeds[1,0]:.4f},{w_speeds[2,0]:.4f},{w_speeds[3,0]:.4f}]\n"
         try:
             self.ser.write(command.encode('utf-8'))
-          #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
+            self.get_logger().info(f"Sent to Arduino: {command.strip()}")
         except Exception as e:
             self.get_logger().error(f"Failed to send command: {e}")
             
@@ -667,8 +667,8 @@ class MotionController(Node):
 
             parts = line.strip('[]').split(',')
             if len(parts) == 4:
-                #self.get_logger().info(f"Received from Arduino: {parts}")
-                #self.get_logger().info(f"Parts length: {len(parts)}")
+                self.get_logger().info(f"Received from Arduino: {parts}")
+                # self.get_logger().info(f"Parts length: {len(parts)}")
                 # print(line)
                 #float(line)
                 # print(line)

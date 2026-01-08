@@ -32,10 +32,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # 'motion_controller_node = robot_slam.motion_controller_node:main',
             'serial_driver = robot_slam.serial_driver:main',
             'odometry = robot_slam.odometry:main',
-            'nav_control = robot_slam.nav_control:main',
+            #'nav_control = robot_slam.nav_control:main',
         ],
     },
 )

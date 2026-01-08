@@ -44,7 +44,7 @@ def generate_launch_description():
             # set buttons/enable as you like
             "enable_button": 6,
             "enable_turbo_button": 7,
-            "require_enable_button": False,
+            # "require_enable_button": False,
 
             # "repeat_rate": 0.0,      # <–– press once = keep moving
             # "key_timeout": 0.0       # optional: no timeout stop
@@ -178,17 +178,17 @@ def generate_launch_description():
     # )
 
     # SLAM toolbox params (make sure this exists)
-    slam_toolbox_share = get_package_share_directory('robot_slam')  # <-- fixed
-    slam_params_file = os.path.join(slam_toolbox_share, 'config', 'slam_toolbox.yaml')
-    slam_toolbox = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
-        ),
-        launch_arguments={
-            'use_sim_time': 'False',
-            'slam_params_file': slam_params_file,
-        }.items()
-    )
+    # slam_toolbox_share = get_package_share_directory('robot_slam')  # <-- fixed
+    # slam_params_file = os.path.join(slam_toolbox_share, 'config', 'slam_toolbox.yaml')
+    # slam_toolbox = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
+    #     ),
+    #     launch_arguments={
+    #         'use_sim_time': 'False',
+    #         'slam_params_file': slam_params_file,
+    #     }.items()
+    # )
 
     # motion_controller_node = Node(
     #     package='robot_slam,
@@ -220,7 +220,7 @@ def generate_launch_description():
         # static_tf_footprint_to_base,
         static_tf_base_to_laser,
         # nav2,
-        slam_toolbox, 
+        # slam_toolbox, 
         # rviz2,
     ])
 
