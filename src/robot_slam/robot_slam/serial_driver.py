@@ -210,7 +210,7 @@ class MotionController(Node):
         # self.last_feedback_time = 0.0
         # self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
         # self.timer = self.create_timer(0.05, self.read_serial_feedback)
-        self.serialRead = self.create_timer(0.1, self.read_serial_feedback)
+        self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
 
         # self.last_w_speeds = np.zeros((4,1))

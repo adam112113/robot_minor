@@ -90,94 +90,80 @@ def generate_launch_description():
     #     'rplidar_a1.yaml'
     # )
 
-    # rplidar = Node(
-    #     package='rplidar_ros',
-    #     executable='rplidar_composition',
-    #     name='rplidar_composition',
-    #     output='screen',
-    #     parameters=[{
-    #         'serial_port': '/dev/ttyUSB0',
-    #         'serial_baudrate': 115200,  # A1 / A2
-    #         # 'serial_baudrate': 256000, # A3
-    #         'frame_id': 'laser',
-    #         'inverted': False,
-    #         'angle_compensate': True,
-    #         'min_range': 0.03,
-    #         'max_range': 6.0,
-    #     }],
-    # )
+    # RPlidar A1 - Hardware Rev: 7, Firmware: 1.29
+    rplidar = Node(
+        package='rplidar_ros',
+        executable='rplidar_composition',
+        name='rplidar_composition',
+        output='screen',
+        parameters=[{
+            'serial_port': '/dev/ttyUSB0',
+            'serial_baudrate': 115200,     # A1 standard baudrate
+            'frame_id': 'laser',  # Match TF tree
+            'inverted': False,
+            'angle_compensate': True,
+            # 'scan_mode': '',               # Empty string for A1 (will auto-detect)
+            # 'channel_type': 'serial',      # Use serial communication
+        }],
+        respawn=True,  # Auto-restart if it crashes
+        respawn_delay=2.0
+    )
 
-    # rplidar = Node(
-    #     package='rplidar_ros',
-    #     executable='rplidar_composition',
-    #     name='rplidar_composition',
-    #     output='screen',
-    #     parameters=[{
-    #         'serial_port': '/dev/ttyUSB0',
-    #         'serial_baudrate': 115200,     # for A1/A2, use 256000 for A3
-    #         'frame_id': 'laser',
-    #         'inverted': False,
-    #         'angle_compensate': True,
-    #         'scan_mode': 'Standard',       # "Boost" or "Sensitivity" optional
-    #     }]
-    #     # remappings=[
-    #     #     ('/scan', '/scan')
-    #     # ]
-    # )
-
-
+    # # Static TF: base_footprint -> base_link (robot body height)
     # static_tf_footprint_to_base = Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
-    #     arguments=['0', '0', '0.0', '0', '0', '0', 'base_footprint', 'base_link']
+    #     name='static_footprint_to_base',
+    #     output='screen',
+    #     arguments=[
+    #         '--x', '0.0',
+    #         '--y', '0.0',
+    #         '--z', '0.0',  # Height of base_link above ground
+    #         '--roll', '0.0',
+    #         '--pitch', '0.0',
+    #         '--yaw', '0.0',
+    #         '--frame-id', 'base_footprint',
+    #         '--child-frame-id', 'base_link'
+    #     ],
     # )
 
-    #Static transform base_link -> laser
+    # # Static TF: base_link -> taitc_lidar_link (lidar position on robot)
     # static_tf_base_to_laser = Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
-    #     arguments=['--x', '0', '--y', '0', '--z', '0.15',
-    #             '--roll', '0', '--pitch', '0', '--yaw', '0',
-    #             '--frame-id', 'base_link', '--child-frame-id', 'laser'],
+    #     name='static_base_to_laser',
+    #     output='screen',
+    #     arguments=[
+    #         '--x', '0.0',
+    #         '--y', '0.0',
+    #         '--z', '0.15',  # Lidar is 15cm above base_link
+    #         '--roll', '0.0',
+    #         '--pitch', '0.0',
+    #         '--yaw', '0.0',
+    #         '--frame-id', 'base_link',
+    #         '--child-frame-id', 'laser'
+    #     ],
     # )
+
 
     static_tf_base_to_laser = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_base_to_laser',
         output='screen',
-        arguments=[
-            '--x', '0.0',
-            '--y', '0.0',
-            '--z', '0.15',
-            '--roll', '0.0',
-            '--pitch', '0.0',
-            '--yaw', '0.0',
-            '--frame-id', 'base_link',
-            '--child-frame-id', 'laser'
-        ],
+        arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
     )
 
-
     
-
-    # static_tf_base_to_laser = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='static_base_to_laser',
-    #     output='screen',
-    #     arguments=['0', '0', '0.15', '0', '0', '0', 'base_link', 'laser']
-    # )
-
     # nav2 (bringup)
-    # nav2 = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(
-    #         os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
-    #     ),
-    #     launch_arguments={'use_sim_time': 'False'}.items()
-    # )
+    nav2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
+        ),
+        launch_arguments={'use_sim_time': 'False'}.items()
+    )
 
-    # SLAM toolbox params (make sure this exists)
+    # # SLAM toolbox params (make sure this exists)
     slam_toolbox_share = get_package_share_directory('robot_slam')  # <-- fixed
     slam_params_file = os.path.join(slam_toolbox_share, 'config', 'slam_toolbox.yaml')
     slam_toolbox = IncludeLaunchDescription(
@@ -190,38 +176,26 @@ def generate_launch_description():
         }.items()
     )
 
-    # motion_controller_node = Node(
-    #     package='robot_slam,
-    #     executable='motion_controller_node',  
-    #     name='motion_controller_node',
-    #     output='screen',
-    #     parameters=[{
-    #         'port': '/dev/ttyACM0',  # Arduino serial port
-    #         'baud_rate': 115200      # Match Arduino sketch
-    #     }]
-    # )
-
-    # RViz
-    # rviz2 = Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
-    #     output='screen'
-    # )
+    # RViz - Start manually if needed: ros2 run rviz2 rviz2
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
+        output='screen'
+    )
 
     return LaunchDescription([
         joy,
         joy2twist,
         odometry,
         serial_driver,
-        # motion_controller_node,
-        # rplidar,
-        # static_tf_footprint_to_base,
-        static_tf_base_to_laser,
-        # nav2,
-        slam_toolbox, 
-        # rviz2,
+        rplidar,
+        # static_tf_footprint_to_base,  # odom->base_footprint (from odometry), base_footprint->base_link (static)
+        static_tf_base_to_laser,      # base_link->laser (static)
+        # nav2,                        # DISABLED - Only needed after mapping is complete
+        slam_toolbox,                 # Generates the map from lidar scans
+        # rviz2,                       # COMMENTED - Start manually: ros2 run rviz2 rviz2
     ])
 
 
