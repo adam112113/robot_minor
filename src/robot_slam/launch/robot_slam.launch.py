@@ -100,7 +100,7 @@ def generate_launch_description():
             'serial_port': '/dev/ttyUSB0',
             'serial_baudrate': 115200,     # A1 standard baudrate
             'frame_id': 'laser',  # Match TF tree
-            'inverted': True,
+            'inverted': False,
             'angle_compensate': True,
             # 'scan_mode': '',               # Empty string for A1 (will auto-detect)
             # 'channel_type': 'serial',      # Use serial communication
@@ -110,22 +110,22 @@ def generate_launch_description():
     )
 
     # # Static TF: base_footprint -> base_link (robot body height)
-    # static_tf_footprint_to_base = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='static_footprint_to_base',
-    #     output='screen',
-    #     arguments=[
-    #         '--x', '0.0',
-    #         '--y', '0.0',
-    #         '--z', '0.0',  # Height of base_link above ground
-    #         '--roll', '0.0',
-    #         '--pitch', '0.0',
-    #         '--yaw', '0.0',
-    #         '--frame-id', 'base_footprint',
-    #         '--child-frame-id', 'base_link'
-    #     ],
-    # )
+    static_tf_footprint_to_base = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_footprint_to_base',
+        output='screen',
+        arguments=[
+            '--x', '0.0',
+            '--y', '0.0',
+            '--z', '0.0',  # Height of base_link above ground
+            '--roll', '0.0',
+            '--pitch', '0.0',
+            '--yaw', '0.0',
+            '--frame-id', 'base_footprint',
+            '--child-frame-id', 'base_link'
+        ],
+    )
 
     # Static TF: base_link -> static_lidar_link (lidar position on robot)
     static_tf_base_to_laser = Node(
@@ -176,12 +176,14 @@ def generate_launch_description():
         }.items()
     )
 
-    # RViz - Start manually if needed: ros2 run rviz2 rviz2
+    # RViz with proper SLAM configuration
+    # CRITICAL: Fixed Frame must be 'map' in RViz for the map to stay stationary!
+    slam_rviz_config = os.path.join(slam_toolbox_share, 'config', 'slam_rviz.yaml')
     rviz2 = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
+        arguments=['-d', slam_rviz_config],
         output='screen'
     )
 

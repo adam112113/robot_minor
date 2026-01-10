@@ -207,10 +207,8 @@ class MotionController(Node):
         self.cmdSubscriber = self.create_subscription(Twist, '/cmd_vel', self.cmdcallback, 10)
         self.feedbackSub = self.create_subscription(Float32MultiArray, '/fb_rot', self.fbCallback, 10)
         self.feedbackPub = self.create_publisher(Twist, '/fb_speed', 10)
-        # self.last_feedback_time = 0.0
-        # self.feedback_interval = 0.01  # seconds (i.e. 10 Hz)
-        # self.timer = self.create_timer(0.05, self.read_serial_feedback)
-        self.serialRead = self.create_timer(0.2, self.read_serial_feedback)
+        # Read serial feedback at 50Hz to match odometry publishing rate
+        self.serialRead = self.create_timer(0.1, self.read_serial_feedback)
         self.get_logger().info("Motion controller node has started!")
 
         # self.last_w_speeds = np.zeros((4,1))
@@ -292,44 +290,67 @@ class MotionController(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to send command: {e}")
             # self.last_send_time = now
-            
+
     def read_serial_feedback(self):
-       # self.get_logger().info("Timer fired: checking serial buffer...")
-        # current_time = time.time()
-        # if current_time - self.last_feedback_time < self.feedback_interval:
-        #     return  # Skip until interval elapsed
-        # try:
-        line = self.ser.readline().decode('utf-8', errors='ignore').strip()
-            # if not line.startswith('[') or line.endswith(']'):
-            #     return
-          #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
+    # Non-blocking read with timeout handling
+        try:
+            if self.ser.in_waiting > 0:  # Only read if data is available
+                line = self.ser.readline().decode('utf-8', errors='ignore').strip()
+                if not line:  # Skip empty lines
+                    return
+                    
+                parts = line.strip('[]').split(',')
+                if len(parts) == 4:
+                    try:
+                        fl, fr, rl, rr = [float(x) for x in parts]
+                        
+                        msg = Twist()
+                        msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
+                        msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
+                        msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
+                        
+                        self.feedbackPub.publish(msg)
+                    except ValueError:
+                        pass  # Skip malformed data
+        except Exception as e:
+            self.get_logger().error(f"Failed to read command: {e}")       
+    # def read_serial_feedback(self):
+    #    # self.get_logger().info("Timer fired: checking serial buffer...")
+    #     # current_time = time.time()
+    #     # if current_time - self.last_feedback_time < self.feedback_interval:
+    #     #     return  # Skip until interval elapsed
+    #     # try:
+    #     line = self.ser.readline().decode('utf-8', errors='ignore').strip()
+    #         # if not line.startswith('[') or line.endswith(']'):
+    #         #     return
+    #       #  self.get_logger().info(f"Sent to Arduino: {command.strip()}")
         
-        #  self.get_logger().info(line)
+    #     #  self.get_logger().info(line)
 
-        parts = line.strip('[]').split(',')
-        if len(parts) == 4:
-            #self.get_logger().info(f"Received from Arduino: {parts}")
-            #self.get_logger().info(f"Parts length: {len(parts)}")
-            # print(line)
-            #float(line)
-            # print(line)
-            #if len(parts):
-            # raw_vals = [float(x) for x in parts]
-            # fl, fr, rl, rr = raw_vals
-            fl, fr, rl, rr = [float(x) for x in parts]
-            # self.get_logger().debug(f"RAW wheels: {raw_vals}, interpreted (rad/s): {[fl,fr,rl,rr]}")
-            # inside read_serial_feedback after parsing fl,fr,rl,rr
-            # self.get_logger().info(f"RAW wheels (from Arduino): fl={fl:.3f} fr={fr:.3f} rl={rl:.3f} rr={rr:.3f}")
+    #     parts = line.strip('[]').split(',')
+    #     if len(parts) == 4:
+    #         #self.get_logger().info(f"Received from Arduino: {parts}")
+    #         #self.get_logger().info(f"Parts length: {len(parts)}")
+    #         # print(line)
+    #         #float(line)
+    #         # print(line)
+    #         #if len(parts):
+    #         # raw_vals = [float(x) for x in parts]
+    #         # fl, fr, rl, rr = raw_vals
+    #         fl, fr, rl, rr = [float(x) for x in parts]
+    #         # self.get_logger().debug(f"RAW wheels: {raw_vals}, interpreted (rad/s): {[fl,fr,rl,rr]}")
+    #         # inside read_serial_feedback after parsing fl,fr,rl,rr
+    #         # self.get_logger().info(f"RAW wheels (from Arduino): fl={fl:.3f} fr={fr:.3f} rl={rl:.3f} rr={rr:.3f}")
 
-            msg = Twist()
-            msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
-            msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
-            msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
+    #         msg = Twist()
+    #         msg.linear.x = (fl + fr + rl + rr) * (RADIUS / 4)
+    #         msg.linear.y = (-fl + fr + rl - rr) * (RADIUS / 4)   
+    #         msg.angular.z = (-fl + fr - rl + rr) * (RADIUS / (4*(LX+LY)))
 
-            self.feedbackPub.publish(msg)
-        # except Exception as e:
-        #     self.get_logger().error(f"Failed to read command: {e}")
-        #    # self.get_logger().info(f"Published /fb_speed: {msg.linear.x:.2f}, {msg.angular.z:.2f}")
+    #         self.feedbackPub.publish(msg)
+    #     # except Exception as e:
+    #     #     self.get_logger().error(f"Failed to read command: {e}")
+    #     #    # self.get_logger().info(f"Published /fb_speed: {msg.linear.x:.2f}, {msg.angular.z:.2f}")
 
 
 def main(args=None):

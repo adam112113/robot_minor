@@ -115,21 +115,58 @@
 
 slam_toolbox:
   ros__parameters:
-    use_sim_time: false          # Must be false for real robot!
+    # === CRITICAL: Real robot settings ===
+    use_sim_time: false
+    
+    # === Frame configuration ===
+    # TF Tree: map -> odom -> base_link -> laser
+    # SLAM publishes: map -> odom
+    # Odometry publishes: odom -> base_link
+    # Static TF publishes: base_link -> laser
     odom_frame: odom
     map_frame: map
-    base_frame: base_link   # Match odometry child_frame_id
+    base_frame: base_link
     scan_topic: /scan
-    # odom_topic: /odom
-    # Commonly useful params
-    resolution: 0.05
-    transform_publish_period: 0.02    # Faster TF updates (50Hz)
-    minimum_time_interval: 0.1
+    
+    # === CRITICAL: Enable TF publishing ===
+    # This makes SLAM publish the map->odom transform!
+    publish_tf: true
+    transform_publish_period: 0.02    # 50Hz TF updates
+    
+    # === Mapping mode ===
     mode: mapping
     
-    # TF settings
-    transform_timeout: 0.2
+    # === Map settings ===
+    resolution: 0.05
+    map_update_interval: 1.0
+    
+    # === Scan matching ===
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.1
+    minimum_travel_heading: 0.1
+    
+    # === TF timing settings ===
+    # Tighter timeouts to prevent using stale transforms
+    transform_timeout: 0.1       # Reduced from 0.5s - reject transforms older than 100ms
     tf_buffer_duration: 30.0
+    minimum_time_interval: 0.05  # Process scans faster (was 0.1s)
+    
+    # === Laser settings (RPLidar A1) ===
+    max_laser_range: 12.0
+    minimum_laser_range: 0.15
+    
+    # === Loop closure ===
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 3
+    
+    # === Solver settings ===
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
 
 # slam_toolbox:
 #   ros__parameters:
@@ -155,4 +192,17 @@ slam_toolbox:
 #     optimize_every_n_nodes: 10
 #     max_likelihood_score: 0.7
 #     use_sim_time: false
+
+# slam_toolbox:
+#   ros__parameters:
+#     use_sim_time: false
+#     odom_frame: odom
+#     map_frame: map
+#     base_frame: base_footprint
+#     scan_topic: /scan
+#     # Commonly useful params
+#     resolution: 0.05
+#     transform_publish_period: 0.05
+#     minimum_time_interval: 0.1
+#     mode: mapping
     
