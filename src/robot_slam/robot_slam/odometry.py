@@ -24,8 +24,8 @@ class OdomNode(Node):
         self.speedSub = self.create_subscription(Twist, '/fb_speed', self.fb_speed_callback, 10)
         self.odomPub = self.create_publisher(Odometry, '/odom', 10)
         self.tf_broadcast = TransformBroadcaster(self)
-        # Publish at 50Hz for better SLAM synchronization (was 10Hz at 0.1s)
-        self.timer1 = self.create_timer(0.1, self.odom_update)
+        # Publish at 50Hz for better SLAM synchronization
+        self.timer1 = self.create_timer(0.02, self.odom_update)
 
         self.last_time = self.get_clock().now()
 
@@ -46,8 +46,6 @@ class OdomNode(Node):
 
 
     def odom_update(self):
-        dt = 0.1 #Time dt
-
         # compute dt based on actual time since last update
         now = self.get_clock().now()
         dt = (now.nanoseconds - self.last_time.nanoseconds) / 1e9

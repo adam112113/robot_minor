@@ -22,6 +22,8 @@ setup(
         # Include launch and config directories
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'config'), glob('config/*.rviz')),
+        (os.path.join('share', package_name, 'maps'), glob('maps/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -32,9 +34,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # 'motion_controller_node = robot_slam.motion_controller_node:main',
             'serial_driver = robot_slam.serial_driver:main',
             'odometry = robot_slam.odometry:main',
+            'nav2_pose = robot_slam.nav2_pose:main',
         ],
     },
 )

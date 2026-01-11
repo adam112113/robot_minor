@@ -97,7 +97,7 @@ def generate_launch_description():
         name='rplidar_composition',
         output='screen',
         parameters=[{
-            'serial_port': '/dev/ttyUSB0',
+            'serial_port': '/dev/ttyUSB1',
             'serial_baudrate': 115200,     # A1 standard baudrate
             'frame_id': 'laser',  # Match TF tree
             'inverted': False,
@@ -176,16 +176,8 @@ def generate_launch_description():
         }.items()
     )
 
-    # RViz with proper SLAM configuration
-    # CRITICAL: Fixed Frame must be 'map' in RViz for the map to stay stationary!
-    slam_rviz_config = os.path.join(slam_toolbox_share, 'config', 'slam_rviz.yaml')
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', slam_rviz_config],
-        output='screen'
-    )
+    # NOTE: RViz runs on HOST machine, not on Pi5 (Ubuntu Server has no GUI)
+    # Use launch_slam_rviz.sh on your host machine to start RViz
 
     return LaunchDescription([
         joy,
@@ -193,11 +185,8 @@ def generate_launch_description():
         odometry,
         serial_driver,
         rplidar,
-        # static_tf_footprint_to_base,  # base_footprint->base_link (static)
-        static_tf_base_to_laser,      # base_link->static_lidar_link (static)
-        # nav2,                        # DISABLED - Only needed after mapping is complete
+        static_tf_base_to_laser,      # base_link->laser (static)
         slam_toolbox,                 # Generates the map from lidar scans
-        # rviz2,                       # COMMENTED - Start manually: ros2 run rviz2 rviz2
     ])
 
 
