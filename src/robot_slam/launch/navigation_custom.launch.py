@@ -228,7 +228,7 @@ def generate_launch_description():
                                     'collision_monitor']}]
     )
 
-    # Click-to-navigate node
+    # Click-to-navigate node (optional - can be launched separately)
     click_to_nav = Node(
         package='robot_slam',
         executable='nav2_pose',
@@ -265,6 +265,6 @@ def generate_launch_description():
         collision_monitor,
         lifecycle_manager_navigation,
         
-        # Helper nodes
+        # Helper nodes (commented out to reduce DDS participants)
         click_to_nav,
     ])

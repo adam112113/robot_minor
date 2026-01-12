@@ -3,8 +3,6 @@ Panels:
     Name: Displays
   - Class: rviz_common/Views
     Name: Views
-  - Class: nav2_rviz_plugins/Navigation 2
-    Name: Navigation 2
 
 Visualization Manager:
   Class: ""
@@ -193,7 +191,13 @@ Visualization Manager:
     - Class: rviz_default_plugins/FocusCamera
     - Class: rviz_default_plugins/Measure
       Line color: 128; 128; 0
-    - Class: nav2_rviz_plugins/GoalTool
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Value: /goal_pose
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
     - Class: rviz_default_plugins/SetInitialPose
       Topic:
         Value: /initialpose
