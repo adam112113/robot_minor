@@ -6,6 +6,11 @@ echo "Stopping all ROS 2 processes..."
 pkill -9 -f "ros2|rplidar|slam_toolbox|odometry|rviz|serial_driver|joy|teleop" 2>/dev/null
 sleep 2
 
+echo "Releasing serial ports..."
+fuser -k /dev/ttyUSB0 2>/dev/null
+fuser -k /dev/ttyACM0 2>/dev/null
+sleep 1
+
 echo "Clearing DDS cache..."
 rm -rf ~/.ros/log/* 2>/dev/null
 

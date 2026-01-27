@@ -97,7 +97,7 @@ def generate_launch_description():
         name='rplidar_composition',
         output='screen',
         parameters=[{
-            'serial_port': '/dev/ttyUSB1',
+            'serial_port': '/dev/ttyUSB0',
             'serial_baudrate': 115200,     # A1 standard baudrate
             'frame_id': 'laser',  # Match TF tree
             'inverted': False,
